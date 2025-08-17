@@ -1,0 +1,10 @@
+services:
+  honeypot:
+    build: .
+    ports:
+      - "587:25"
+    restart: unless-stopped
+    environment:
+      - DISCORD_WEBHOOK_URL=https://discordapp.com/api/webhooks/xxxxx/xxxxxxx
+    volumes:
+      - ./:/app
