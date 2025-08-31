@@ -28,16 +28,24 @@ def send_discord_notification(peer, mailfrom, rcpttos, subject, body):
         print("!!! Discord Webhook URL not configured. Skipping notification. !!!")
         return
 
+    fields = [
+        {"name": "Sender IP (Peer)", "value": f"`{peer[0]}:{peer[1]}`", "inline": True},
+        {"name": "Mail From", "value": f"`{mailfrom}`", "inline": True},
+        {"name": "Recipient(s)", "value": f"`{', '.join(rcpttos)}`", "inline": False},
+        {"name": "Subject", "value": subject, "inline": False},
+    ]
+
+    # Split body into chunks of 1024 characters
+    body_chunks = [body[i:i + 1024] for i in range(0, len(body), 1024)]
+
+    for i, chunk in enumerate(body_chunks):
+        field_name = "Body" if i == 0 else f"Body (cont. {i+1})"
+        fields.append({"name": field_name, "value": "```\n{}\n```".format(chunk), "inline": False})
+
     embed = {
         "title": "📧 New Email Caught by Honeypot",
         "color": 3066993, # Green color
-        "fields": [
-            {"name": "Sender IP (Peer)", "value": f"`{peer[0]}:{peer[1]}`", "inline": True},
-            {"name": "Mail From", "value": f"`{mailfrom}`", "inline": True},
-            {"name": "Recipient(s)", "value": f"`{', '.join(rcpttos)}`", "inline": False},
-            {"name": "Subject", "value": subject, "inline": False},
-            {"name": "Body", "value": "```\n{}\n```".format(body[:1000] + "..." if len(body) > 1024 else body), "inline": False}
-        ]
+        "fields": fields
     }
 
     payload = {
